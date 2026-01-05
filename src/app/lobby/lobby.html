@@ -1,0 +1,78 @@
+<div class="container mx-auto p-4">
+    @if (lobby$ | async; as lobby) {
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-4xl font-bold">{{ lobby.name }}</h1>
+            <a routerLink="/" class="text-blue-500 hover:underline"
+                >Back to Lobbies</a
+            >
+        </div>
+        <p class="text-lg text-gray-600 mb-6">
+            Status: <span class="font-semibold">{{ lobby.status }}</span>
+        </p>
+
+        @if (lobby.status === 'waiting') {
+        <div>
+            @if (players$ | async; as players) { @if (isHost(players)) {
+            <button
+                (click)="onStartGame()"
+                class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded mb-6"
+            >
+                Start Game
+            </button>
+            } @if (!isPlayerInCurrentLobby(players) &&
+            lobbyService.playerName()) {
+            <button
+                (click)="onJoinCurrentLobby()"
+                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-6"
+            >
+                Join Lobby
+            </button>
+            } @else if (isPlayerInCurrentLobby(players) &&
+            lobbyService.playerName()) {
+            <p class="text-lg font-semibold text-gray-700 mb-6">
+                You are in this lobby.
+            </p>
+            } @else if (!lobbyService.playerName()) {
+            <p class="text-red-500 mb-6">
+                Set your player name to join this lobby.
+            </p>
+            } }
+
+            <h2 class="text-2xl font-bold mb-4">Players</h2>
+            @if (players$ | async; as players) { @if (players.length > 0) {
+            <ul class="space-y-2">
+                @for (player of players; track player.id) {
+                <li
+                    class="p-3 bg-gray-100 rounded-md flex justify-between items-center"
+                >
+                    <span>{{ player.name }}</span>
+                    <span
+                        class="px-2 py-1 text-xs font-semibold rounded-full"
+                        [ngClass]="
+                            player.isReady
+                                ? 'bg-green-200 text-green-800'
+                                : 'bg-yellow-200 text-yellow-800'
+                        "
+                    >
+                        {{ player.isReady ? 'Ready' : 'Not Ready' }}
+                    </span>
+                </li>
+                }
+            </ul>
+            } @else {
+            <p class="text-gray-500">No players yet.</p>
+            } }
+        </div>
+        } @else if (lobby.status === 'in-progress' || lobby.status ===
+        'finished') {
+        <app-game
+            [lobby]="lobby"
+            [players]="(players$ | async) || []"
+        ></app-game>
+        }
+    </div>
+    } @else {
+    <p>Loading lobby...</p>
+    }
+</div>
