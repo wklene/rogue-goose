@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "public",
+    "public": "dist/rogue-goose/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
