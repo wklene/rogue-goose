@@ -19,7 +19,7 @@
             <button
                 (click)="onRollDice()"
                 [disabled]="!isMyTurn()"
-                class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
             >
                 Roll Dice
             </button>
@@ -33,7 +33,10 @@
             }
             <div class="dice-container">
                 <div class="dice" [class.rolling]="isRolling()">
-                    {{ lobby().gameState?.lastDiceRoll || '?' }}
+                    {{ lobby().gameState?.lastDiceRoll1 || '?' }}
+                </div>
+                <div class="dice" [class.rolling]="isRolling()">
+                    {{ lobby().gameState?.lastDiceRoll2 || '?' }}
                 </div>
             </div>
             <div>
@@ -47,22 +50,58 @@
                 <p>
                     Last Roll: <strong>{{ roll }}</strong>
                 </p>
+                } @if(lobby().gameState?.turnMessage; as message) {
+                <p class="turn-message">{{ message }}</p>
                 }
             </div>
         </div>
         }
+        <div class="player-list-container">
+            @for(player of players(); track player.id) {
+            <div class="player-item" [class.current-player]="player.id === lobby().gameState?.currentPlayerTurn">
+                <span class="player-name">{{ player.name }}</span>
+                <span class="player-position">Pos: {{ player.position }}</span>
+                @if (player.turnsToSkip && player.turnsToSkip > 0) {
+                <span class="player-skipped-turns">Skip: {{ player.turnsToSkip }}</span>
+                }
+            </div>
+            }
+        </div>
     </div>
     <div class="game-board">
-        @for(square of boardSquares; track square) {
-        <div class="board-square">
-            <span class="square-number">{{ square }}</span>
+        @for(squareInfo of boardLayout; track squareInfo.square) {
+        <div
+            class="board-square"
+            [class.special-goose]="squareInfo.special === 'goose'"
+            [class.special-bridge]="squareInfo.special === 'bridge'"
+            [class.special-trap]="squareInfo.special === 'trap'"
+            [class.special-maze]="squareInfo.special === 'maze'"
+            [class.special-prison]="squareInfo.special === 'prison'"
+            [class.special-death]="squareInfo.special === 'death'"
+            [class.special-start]="squareInfo.special === 'start'"
+            [style.left.px]="squareInfo.x * 65"
+            [style.top.px]="squareInfo.y * 65"
+        >
+            <span class="square-number">
+                @if (squareInfo.square === 0) {
+                    Start
+                } @else {
+                    {{ squareInfo.square }}
+                }
+            </span>
         </div>
         } @for(player of players(); track player.id) {
         <div
             class="player-pawn"
             [style.background-color]="player.color || '#808080'"
-            [style.transform]="getPlayerTransform(player.position || 0)"
-        ></div>
+            [style.transform]="getPlayerTransform(player.id!, player.position || 0)"
+        >
+            @if (player.turnsToSkip && player.turnsToSkip > 0) {
+            <span class="turns-to-skip-indicator">{{
+                player.turnsToSkip
+            }}</span>
+            }
+        </div>
         }
     </div>
 </div>
